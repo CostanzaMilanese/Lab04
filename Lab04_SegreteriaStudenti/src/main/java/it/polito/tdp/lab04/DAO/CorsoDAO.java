@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,6 +16,8 @@ public class CorsoDAO {
 	/*
 	 * Ottengo tutti i corsi salvati nel Db
 	 */
+	
+	//metodo che mi serve per popolare menu a tendina 
 	public List<Corso> getTuttiICorsi() {
 
 		final String sql = "SELECT * FROM corso";
@@ -26,9 +29,12 @@ public class CorsoDAO {
 			PreparedStatement st = conn.prepareStatement(sql);
 
 			ResultSet rs = st.executeQuery();
+			
+			
 
 			while (rs.next()) {
 
+				Corso corso = new Corso() ;
 				String codins = rs.getString("codins");
 				int numeroCrediti = rs.getInt("crediti");
 				String nome = rs.getString("nome");
@@ -36,12 +42,18 @@ public class CorsoDAO {
 
 				System.out.println(codins + " " + numeroCrediti + " " + nome + " " + periodoDidattico);
 
-				// Crea un nuovo JAVA Bean Corso
-				// Aggiungi il nuovo oggetto Corso alla lista corsi
+				corso.setCodins(codins);
+				corso.setCrediti(numeroCrediti);
+				corso.setNome(nome);
+				corso.setPd(periodoDidattico);
+				
+				corsi.add(corso);
+				
 			}
 
 			conn.close();
 			
+		
 			return corsi;
 			
 
@@ -56,14 +68,38 @@ public class CorsoDAO {
 	 * Dato un codice insegnamento, ottengo il corso
 	 */
 	public void getCorso(Corso corso) {
-		// TODO
-	}
+		
+		
+		
+		}
 
-	/*
-	 * Ottengo tutti gli studenti iscritti al Corso
-	 */
-	public void getStudentiIscrittiAlCorso(Corso corso) {
-		// TODO
+	
+	public List<Studente> getStudentiIscrittiAlCorso(Corso corso) {
+		
+		final String sql = "SELECT * FROM iscrizione WHERE iscrizione.matricola=studente.matricola AND codins=?" ;
+		List <Studente > studentiIscrittiACorso = new ArrayList<Studente> ();
+		
+		try {
+			
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setString(1, corso.getCodins());
+			
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+
+				studentiIscrittiACorso.add(new Studente(rs.getInt("matricola"), rs.getString("nome"), rs.getString("cognome"), rs.getString("cds")));
+			
+			}
+			
+			conn.close();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Errore Db", e); }
+		
+		return studentiIscrittiACorso;
 	}
 
 	/*
